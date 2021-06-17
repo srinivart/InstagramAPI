@@ -1,0 +1,160 @@
+   public void downloadImages() throws Exception {
+
+        String url = "https://graph.instagram.com/17917513480681591?fields=media_url&access_token=" + token;
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        // optional default is GET
+        con.setRequestMethod("GET");
+        //add request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        int responseCode = con.getResponseCode();
+        System.out.println("\nSending 'GET' request to URL : " + url);
+        System.out.println("Response Code : " + responseCode);
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        //print in String
+        System.out.println(response.toString());
+        //Read JSON response and print
+        JSONObject myResponse = new JSONObject(response.toString());
+        System.out.println("result after Reading JSON Response");
+        System.out.println("media_url- " + myResponse.getString("media_url"));
+
+        String media_url = myResponse.getString("media_url");
+
+        BufferedImage image = null;
+        URL url1 = new URL(media_url);
+        image = ImageIO.read(url1);
+        ImageIO.write(image, "jpg", new File("//Users/srinivaspanaganti/Desktop/girl2.jpg"));
+    }
+
+
+
+
+    public void downloadIds () throws Exception{
+
+        String url = "https://graph.instagram.com/me/media?fields=id,media_type,media_url&access_token=" + token;
+
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        // optional default is GET
+        con.setRequestMethod("GET");
+        //add request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        JSONObject myResponse = new JSONObject(response.toString());
+        //String media_type = myResponse.getString("media_type");
+        //System.out.println(myResponse);
+       // System.out.println(myResponse.getJSONArray("data").get(0));
+
+        List<String> idList = new ArrayList<>();
+        for(int i=0;i<myResponse.getJSONArray("data").length();i++) {
+            idList.add(myResponse.getJSONArray("data").getString(i));
+        }
+
+//        for (String s : idList) {
+//            System.out.println(s);
+//        }
+
+//        JSONArray data = myResponse.getJSONArray("data");
+//        System.out.println(data.get(0));
+
+
+//          JSONArray data = myResponse.getJSONArray("data");
+//          //System.out.println(data);
+//          data.getJSONObject(0).get("media_url");
+//          System.out.println(data.getJSONObject(0).get("media_url"));
+
+             List<String> urlList = new ArrayList<>();
+
+              JSONArray data = myResponse.getJSONArray("data");
+
+               for(int i=0;i<data.length();i++){
+
+                   if(data.getJSONObject(i).get("media_type").equals("IMAGE")){
+                       //System.out.println(data.getJSONObject(i).get("media_url").toString());
+                       urlList.add(data.getJSONObject(i).get("media_url").toString());
+                   }
+               }
+               //  urlList.forEach(x -> System.out.println(x));
+
+
+//                   BufferedImage image = null;
+//                 for(String media_url : urlList){
+//                     URL url1 = new URL(media_url);
+//                     image = ImageIO.read(url1);
+//                     ImageIO.write(image, "jpg", new File("//Users/srinivaspanaganti/Desktop/girl2.jpg"));
+//                 }
+
+
+
+                   BufferedImage image = null;
+                   for(int i=0; i<urlList.size();i++){
+                     URL url1 = new URL(urlList.get(i));
+                       image = ImageIO.read(url1);
+                       ImageIO.write(image, "jpg", new File("//Users/srinivaspanaganti/Desktop/Insta/image"+i+".jpg"));
+        }
+
+
+
+
+
+    }
+
+
+    public void downloadAllImages() throws Exception {
+        String url = "https://graph.instagram.com/me/media?fields=id,media_type,media_url&access_token=" + token + "&limit=300";
+
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        // optional default is GET
+        con.setRequestMethod("GET");
+        //add request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        JSONObject myResponse = new JSONObject(response.toString());
+
+
+        List<String> urlList = new ArrayList<>();
+        JSONArray data = myResponse.getJSONArray("data");
+
+        for (int i = 0; i < data.length(); i++) {
+            if (data.getJSONObject(i).get("media_type").equals("IMAGE")) {
+                //System.out.println(data.getJSONObject(i).get("media_url").toString());
+                urlList.add(data.getJSONObject(i).get("media_url").toString());
+            }
+        }
+
+//        BufferedImage image = null;
+//        for (int i = 0; i < urlList.size(); i++) {
+//            URL url1 = new URL(urlList.get(i));
+//            image = ImageIO.read(url1);
+//            ImageIO.write(image, "jpg", new File("//Users/srinivaspanaganti/Desktop/Insta/image" + i + ".jpg"));
+//
+//        }
+
+        System.out.println(myResponse);
+        JSONObject paging = myResponse.getJSONObject("paging");
+        //System.out.println(paging.getString("next"));
+        String nextPage = paging.getString("next");
+
+    }
